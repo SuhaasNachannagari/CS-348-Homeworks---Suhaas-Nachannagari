@@ -1,0 +1,439 @@
+CS 348 - Homework 2: SQL (Subqueries, complex SQL)
+(100 Points)
+Spring 2026
+
+Due on: 2/11/2026 at 11:59 pm 
+This assignment is to be completed by individuals. 
+
+Submission Instructions: 
+Submit your answers using the hw2.py skeleton file included with this assignment (look at the homework tab in Brightspace/content). The python file is read by the autograder. It is important to have a syntax-error free file. The first and most important step is to write your Purdue username in the username function. Then, write your queries in the query1 to query15 functions. Your query answer should have the same attributes(columns) exactly in the same order as the expected result shown in each question. However, the rows can be in any order unless a specific order is required by the question. Column headers can be different. Before submitting your Python file execute the file using the command: Python3 hw2.py The output should contain all of your queries. Getting the correct output ensures that the autograder will be able to read your queries.
+
+The homework will be submitted in Gradescope. You will be able to submit starting 2/2. 
+Make sure you submit the correct file (hw2.py). 
+
+Database instructions:
+For this assignment, use Formula1.sqlite SQLite database included with Homework 1. You can open the database by simply typing .open Formula1.sqlite in the SQLite shell. For nice layout in SQLite shell, run the commands 
+.mode column 
+.headers on
+
+Grading:
+This assignment will be auto-graded using SQLite. You are highly encouraged to use SQLite shell to test your queries before submitting your assignment. Grading will use a different database instance than the one given to students to test their queries. Therefore, make sure your queries are robust and that they work on any data instance. There is no partial credit in this homework.
+
+
+===================================================================
+Database: Use the Homework 1 database (Formula1)
+
+Question 1) (6 points) Find the furthest-south circuit (circuit with the smallest lat value)
+
+Expected Output:
+circuitId  circuitRef   name                            location   country    lat       lng      alt  url
+---------  -----------  ------------------------------  ---------  ---------  --------  -------  ---  ---------------------------------------------------------
+1          albert_park  Albert Park Grand Prix Circuit  Melbourne  Australia  -37.8497  144.968  10   http://en.wikipedia.org/wiki/Melbourne_Grand_Prix_Circuit
+
+
+===========================================================
+Question 2) (6 points) Find the circuit with the largest number of races. Use the circuit and races tables.
+
+Expected Output:
+name                          location  country  count_races
+----------------------------  --------  -------  -----------
+Autodromo Nazionale di Monza  Monza     Italy    68
+
+===========================================================
+Question 3) (6 points) Now list the races held in the circuit with the largest number of races (e.g., all races in Monza for this data instance).
+
+Expected Output:
+raceId  year  name                date
+------  ----  ------------------  ----------
+839     1950  Italian Grand Prix  1950-09-03
+831     1951  Italian Grand Prix  1951-09-16
+824     1952  Italian Grand Prix  1952-09-07
+816     1953  Italian Grand Prix  1953-09-13
+806     1954  Italian Grand Prix  1954-09-05
+798     1955  Italian Grand Prix  1955-09-11
+791     1956  Italian Grand Prix  1956-09-02
+783     1957  Italian Grand Prix  1957-09-08
+774     1958  Italian Grand Prix  1958-09-07
+763     1959  Italian Grand Prix  1959-09-13
+754     1960  Italian Grand Prix  1960-09-04
+744     1961  Italian Grand Prix  1961-09-10
+735     1962  Italian Grand Prix  1962-09-16
+725     1963  Italian Grand Prix  1963-09-08
+716     1964  Italian Grand Prix  1964-09-06
+706     1965  Italian Grand Prix  1965-09-12
+696     1966  Italian Grand Prix  1966-09-04
+687     1967  Italian Grand Prix  1967-09-10
+675     1968  Italian Grand Prix  1968-09-08
+663     1969  Italian Grand Prix  1969-09-07
+652     1970  Italian Grand Prix  1970-09-06
+640     1971  Italian Grand Prix  1971-09-05
+629     1972  Italian Grand Prix  1972-09-10
+617     1973  Italian Grand Prix  1973-09-09
+602     1974  Italian Grand Prix  1974-09-08
+588     1975  Italian Grand Prix  1975-09-07
+572     1976  Italian Grand Prix  1976-09-12
+556     1977  Italian Grand Prix  1977-09-11
+540     1978  Italian Grand Prix  1978-09-10
+524     1979  Italian Grand Prix  1979-09-09
+495     1981  Italian Grand Prix  1981-09-13
+481     1982  Italian Grand Prix  1982-09-12
+464     1983  Italian Grand Prix  1983-09-11
+449     1984  Italian Grand Prix  1984-09-09
+431     1985  Italian Grand Prix  1985-09-08
+416     1986  Italian Grand Prix  1986-09-07
+398     1987  Italian Grand Prix  1987-09-06
+383     1988  Italian Grand Prix  1988-09-11
+367     1989  Italian Grand Prix  1989-09-10
+332     1990  Italian Grand Prix  1990-09-09
+316     1991  Italian Grand Prix  1991-09-08
+301     1992  Italian Grand Prix  1992-09-13
+285     1993  Italian Grand Prix  1993-09-12
+268     1994  Italian Grand Prix  1994-09-11
+251     1995  Italian Grand Prix  1995-09-10
+237     1996  Italian Grand Prix  1996-09-08
+219     1997  Italian Grand Prix  1997-09-07
+204     1998  Italian Grand Prix  1998-09-13
+187     1999  Italian Grand Prix  1999-09-12
+171     2000  Italian Grand Prix  2000-09-10
+155     2001  Italian Grand Prix  2001-09-16
+138     2002  Italian Grand Prix  2002-09-15
+121     2003  Italian Grand Prix  2003-09-14
+104     2004  Italian Grand Prix  2004-09-12
+85      2005  Italian Grand Prix  2005-09-04
+67      2006  Italian Grand Prix  2006-09-10
+48      2007  Italian Grand Prix  2007-09-09
+31      2008  Italian Grand Prix  2008-09-14
+13      2009  Italian Grand Prix  2009-09-13
+350     2010  Italian Grand Prix  2010-09-12
+853     2011  Italian Grand Prix  2011-09-11
+872     2012  Italian Grand Prix  2012-09-09
+892     2013  Italian Grand Prix  2013-09-08
+912     2014  Italian Grand Prix  2014-09-07
+938     2015  Italian Grand Prix  2015-09-06
+961     2016  Italian Grand Prix  2016-09-04
+981     2017  Italian Grand Prix  2017-09-03
+1002    2018  Italian Grand Prix  2018-09-02
+
+============================
+Question 4) (6 points) Modify Q4 in Homework 1 by adding the number of times a driver has achieved a second place (position = 2 in results table).
+
+Expected Output:
+
+raceId  name                  forename   surname      position  points  wins  second_place
+------  --------------------  ---------  -----------  --------  ------  ----  ------------
+988     Abu Dhabi Grand Prix  Lewis      Hamilton     1         363     9     4
+988     Abu Dhabi Grand Prix  Sebastian  Vettel       2         317     5     6
+988     Abu Dhabi Grand Prix  Valtteri   Bottas       3         305     3     6
+988     Abu Dhabi Grand Prix  Kimi       R?_ikk?nen   4         205     0     2
+988     Abu Dhabi Grand Prix  Daniel     Ricciardo    5         200     1     1
+988     Abu Dhabi Grand Prix  Max        Verstappen   6         168     2     1
+988     Abu Dhabi Grand Prix  Sergio     P?rez        7         100     0     0
+988     Abu Dhabi Grand Prix  Esteban    Ocon         8         87      0     0
+988     Abu Dhabi Grand Prix  Carlos     Sainz        9         54      0     0
+988     Abu Dhabi Grand Prix  Nico       H?_lkenberg  10        43      0     0
+988     Abu Dhabi Grand Prix  Felipe     Massa        11        43      0     0
+988     Abu Dhabi Grand Prix  Lance      Stroll       12        40      0     0
+988     Abu Dhabi Grand Prix  Romain     Grosjean     13        28      0     0
+988     Abu Dhabi Grand Prix  Kevin      Magnussen    14        19      0     0
+988     Abu Dhabi Grand Prix  Fernando   Alonso       15        17      0     0
+988     Abu Dhabi Grand Prix  Stoffel    Vandoorne    16        13      0     0
+988     Abu Dhabi Grand Prix  Jolyon     Palmer       17        8       0     0
+988     Abu Dhabi Grand Prix  Pascal     Wehrlein     18        5       0     0
+988     Abu Dhabi Grand Prix  Daniil     Kvyat        19        5       0     0
+988     Abu Dhabi Grand Prix  Marcus     Ericsson     20        0       0     0
+988     Abu Dhabi Grand Prix  Pierre     Gasly        21        0       0     0
+988     Abu Dhabi Grand Prix  Antonio    Giovinazzi   22        0       0     0
+988     Abu Dhabi Grand Prix  Brendon    Hartley      23        0       0     0
+988     Abu Dhabi Grand Prix  Jenson     Button       24        0       0     0
+988     Abu Dhabi Grand Prix  Paul       di Resta     25        0       0     0
+
+========================================
+Question 5) (6 points) Modify Q9 in Homework 1 by adding the average total points of all constructors (get total points for each constructor then average those totals).
+
+Expected Output:
+
+constructor    sum_points  average_total_points
+-------------  ----------  --------------------
+Ferrari        8083.77     183.944685990338
+McLaren        5314.5      183.944685990338
+Red Bull       3888.5      183.944685990338
+Mercedes       3857.14     183.944685990338
+Williams       3559.0      183.944685990338
+Renault        1383        183.944685990338
+Team Lotus     995         183.944685990338
+Force India    987         183.944685990338
+Benetton       861.5       183.944685990338
+Tyrrell        711         183.944685990338
+Lotus F1       706         183.944685990338
+Brabham        631         183.944685990338
+BRM            537.5       183.944685990338
+Sauber         509         183.944685990338
+Ligier         388         183.944685990338
+Toro Rosso     382         183.944685990338
+Cooper-Climax  336.5       183.944685990338
+Maserati       313.14      183.944685990338
+BMW Sauber     308         183.944685990338
+Jordan         291         183.944685990338
+Lotus-Climax   281         183.944685990338
+Toyota         278.5       183.944685990338
+BAR            227         183.944685990338
+Alfa Romeo     217         183.944685990338
+Lotus-Ford     209         183.944685990338
+Brabham-Repco  175         183.944685990338
+Brawn          172         183.944685990338
+Honda          156         183.944685990338
+March          148.0       183.944685990338
+McLaren-Ford   143         183.944685990338
+Arrows         142         183.944685990338
+Matra-Ford     130         183.944685990338
+Kurtis Kraft   130.0       183.944685990338
+Vanwall        108         183.944685990338
+
+============================================================
+Question 6) (7 points) Now keep only constructors whose total points is above the average total points (e.g., above 183.944685990338 for this data instance).
+
+Expected Output:
+
+constructor    sum_points
+-------------  ----------
+Ferrari        8083.77
+McLaren        5314.5
+Red Bull       3888.5
+Mercedes       3857.14
+Williams       3559.0
+Renault        1383
+Team Lotus     995
+Force India    987
+Benetton       861.5
+Tyrrell        711
+Lotus F1       706
+Brabham        631
+BRM            537.5
+Sauber         509
+Ligier         388
+Toro Rosso     382
+Cooper-Climax  336.5
+Maserati       313.14
+BMW Sauber     308
+Jordan         291
+Lotus-Climax   281
+Toyota         278.5
+BAR            227
+Alfa Romeo     217
+Lotus-Ford     209
+
+==============================================
+Question 7) (7 points) Get the average gap in points between 1st and 2nd ranked constructors after each race in 2017 season. Use the constructor_standings table. 
+
+Expected output:
+
+avg_gap
+------------------------------------------------------------------
+61.35
+
+===================================================
+
+Question 8) (7 points) List the constructor(s) that have scored points in every race they participated in during the 2004 season.
+
+Expected output:
+
+constructor_name
+----------------
+Ferrari
+
+===============================================
+Question 9) (7 points)  Find the drivers who have finished on the podium (1st, 2nd, or 3rd position) in at least 90% of the races they participated in during the 2009 season.
+
+Expected output:
+
+forename	surname
+------------------------------------------------------------------
+Jenson	Button
+
+=======================================
+Question 10) (7 points) Each constructor has two drivers in each race. Modify Q5 in Homework 1 to include only one driver per constructor. Keep the driver with the better position. 
+
+Expected Output:
+
+raceId  name                  position  forename   surname      constructor   laps  milliseconds  statusId  status
+------  --------------------  --------  ---------  -----------  ------------  ----  ------------  --------  --------
+988     Abu Dhabi Grand Prix  1         Valtteri   Bottas       Mercedes      55    5654062       1         Finished
+988     Abu Dhabi Grand Prix  3         Sebastian  Vettel       Ferrari       55    5673392       1         Finished
+988     Abu Dhabi Grand Prix  5         Max        Verstappen   Red Bull      55    5700331       1         Finished
+988     Abu Dhabi Grand Prix  6         Nico       H?_lkenberg  Renault       55    5739775       1         Finished
+988     Abu Dhabi Grand Prix  7         Sergio     P?rez        Force India   55    5746124       1         Finished
+988     Abu Dhabi Grand Prix  9         Fernando   Alonso       McLaren       54                  11        +1 Lap
+988     Abu Dhabi Grand Prix  10        Felipe     Massa        Williams      54                  11        +1 Lap
+988     Abu Dhabi Grand Prix  11        Romain     Grosjean     Haas F1 Team  54                  11        +1 Lap
+988     Abu Dhabi Grand Prix  14        Pascal     Wehrlein     Sauber        54                  11        +1 Lap
+988     Abu Dhabi Grand Prix  15        Brendon    Hartley      Toro Rosso    54                  11        +1 Lap
+
+====================================================================
+Question 11) (7 points) The grid spots are the locations where drivers start a race. Starting from a front Grid spot is a clear advantage. However, sometimes drivers coming from behind make it to the top 10 positions at the end of a race. Find the race(s) where most top 10 positions were earned by drivers with large Grid numbers. Consider the top 10 positions in each race and compute the total abs(grid - position). Make sure the race has drivers in all 10 spots as the column may include Nulls (i.e., make sure count(position) = 10).
+
+Expected Result: 
+
+raceId  name                   year  position  grid  forename   surname       name
+------  ---------------------  ----  --------  ----  ---------  ------------  ------------
+307     San Marino Grand Prix  1991  1         1     Ayrton     Senna         McLaren
+307     San Marino Grand Prix  1991  2         5     Gerhard    Berger        McLaren
+307     San Marino Grand Prix  1991  3         16    Jyrki      J?_rvilehto   Dallara
+307     San Marino Grand Prix  1991  4         9     Pierluigi  Martini       Minardi
+307     San Marino Grand Prix  1991  5         25    Mika       H?_kkinen     Team Lotus
+307     San Marino Grand Prix  1991  6         26    Julian     Bailey        Team Lotus
+307     San Marino Grand Prix  1991  7         24    Thierry    Boutsen       Ligier
+307     San Marino Grand Prix  1991  8         23    Mark       Blundell      Brabham
+307     San Marino Grand Prix  1991  9         21    Eric       van de Poele  Lambo
+307     San Marino Grand Prix  1991  10        19    ??rik      Comas         Ligier
+768     Indianapolis 500       1958  1         7     Jimmy      Bryan         Epperly
+768     Indianapolis 500       1958  2         25    George     Amick         Epperly
+768     Indianapolis 500       1958  3         8     Johnny     Boyd          Kurtis Kraft
+768     Indianapolis 500       1958  4         9     Tony       Bettenhausen  Epperly
+768     Indianapolis 500       1958  5         20    Jim        Rathmann      Epperly
+768     Indianapolis 500       1958  6         3     Jimmy      Reece         Watson
+768     Indianapolis 500       1958  7         13    Don        Freeland      Phillips
+768     Indianapolis 500       1958  8         19    Jud        Larson        Watson
+768     Indianapolis 500       1958  9         26    Eddie      Johnson       Kurtis Kraft
+768     Indianapolis 500       1958  10        33    Bill       Cheesbourg    Kurtis Kraft
+
+============================
+Question 12) (7 points) List the top 3 drivers in the years 2010 to 2017. You can get the final standings of a particular year by checking the driver_standings table for the last race in each year. The last race in a year is the race with the largest total points in that year.
+
+Expected Output:
+
+year  position  forename   surname     points  wins
+----  --------  ---------  ----------  ------  ----
+2010  1         Sebastian  Vettel      256     5
+2010  2         Fernando   Alonso      252     5
+2010  3         Mark       Webber      242     4
+2011  1         Sebastian  Vettel      392     11
+2011  2         Jenson     Button      270     3
+2011  3         Mark       Webber      258     1
+2012  1         Sebastian  Vettel      281     5
+2012  2         Fernando   Alonso      278     3
+2012  3         Kimi       R?_ikk?nen  207     1
+2013  1         Sebastian  Vettel      397     13
+2013  2         Fernando   Alonso      242     2
+2013  3         Mark       Webber      199     0
+2014  1         Lewis      Hamilton    384     11
+2014  2         Nico       Rosberg     317     5
+2014  3         Daniel     Ricciardo   238     3
+2015  1         Lewis      Hamilton    381     10
+2015  2         Nico       Rosberg     322     6
+2015  3         Sebastian  Vettel      278     3
+2016  1         Nico       Rosberg     385     9
+2016  2         Lewis      Hamilton    380     10
+2016  3         Daniel     Ricciardo   256     1
+2017  1         Lewis      Hamilton    363     9
+2017  2         Sebastian  Vettel      317     5
+2017  3         Valtteri   Bottas      305     3
+
+===============================================
+
+Question 13) (7 points) Consider the 2017 Brazilian Grand Prix (raceid = 987). Find the most interesting lap where driver positions changed the most compared to the previous lap. Use abs(position in lap t+1 - position in lap t). Compute the total changes for all drivers to find the lap with the most changes in positions. Use the laptimes table.
+
+Expected Output:
+
+forename   surname      lap  position  lap  position
+---------  -----------  ---  --------  ---  --------
+Sebastian  Vettel       28   1         29   3
+Kimi       R?_ikk?nen   28   2         29   1
+Lewis      Hamilton     28   3         29   2
+Max        Verstappen   28   4         29   7
+Valtteri   Bottas       28   5         29   4
+Sergio     P?rez        28   6         29   6
+Daniel     Ricciardo    28   7         29   5
+Fernando   Alonso       28   8         29   11
+Nico       H?_lkenberg  28   9         29   8
+Carlos     Sainz        28   10        29   9
+Felipe     Massa        28   11        29   10
+Pierre     Gasly        28   12        29   12
+Lance      Stroll       28   13        29   16
+Pascal     Wehrlein     28   14        29   13
+Marcus     Ericsson     28   15        29   14
+Romain     Grosjean     28   16        29   15
+Brendon    Hartley      28   17        29   17
+
+==========================
+Question 14) (7 points) Ayrton Senna, the three times F1 champion passed away in a tragic accident in the 1994 San Marino Grand Prix. Compute the following stats for Ayrton Senna showing the number of times he finished (statusid = 1) or not finished (statusid <> 1) a race. Show the stats for each constructor and race pair.
+
+Expected Output:
+
+constructor  race                      Finished  constructor  race                      Not_Finished
+-----------  ------------------------  --------  -----------  ------------------------  ------------
+McLaren      Australian Grand Prix     3         McLaren      Australian Grand Prix     3
+McLaren      Belgian Grand Prix        6
+McLaren      Brazilian Grand Prix      3         McLaren      Brazilian Grand Prix      3
+McLaren      British Grand Prix        2         McLaren      British Grand Prix        4
+McLaren      Canadian Grand Prix       2         McLaren      Canadian Grand Prix       4
+McLaren      Detroit Grand Prix        1
+McLaren      European Grand Prix       1
+McLaren      French Grand Prix         4         McLaren      French Grand Prix         2
+McLaren      German Grand Prix         5         McLaren      German Grand Prix         1
+McLaren      Hungarian Grand Prix      5         McLaren      Hungarian Grand Prix      1
+McLaren      Italian Grand Prix        3         McLaren      Italian Grand Prix        3
+McLaren      Japanese Grand Prix       3         McLaren      Japanese Grand Prix       3
+McLaren      Mexican Grand Prix        3         McLaren      Mexican Grand Prix        2
+McLaren      Monaco Grand Prix         5         McLaren      Monaco Grand Prix         1
+McLaren      Portuguese Grand Prix     3         McLaren      Portuguese Grand Prix     3
+McLaren      San Marino Grand Prix     4         McLaren      San Marino Grand Prix     2
+McLaren      South African Grand Prix  2
+McLaren      Spanish Grand Prix        4         McLaren      Spanish Grand Prix        2
+McLaren      United States Grand Prix  2         McLaren      United States Grand Prix  1
+Team Lotus   Austrian Grand Prix       1         Team Lotus   Austrian Grand Prix       2
+Team Lotus   Belgian Grand Prix        2         Team Lotus   Belgian Grand Prix        1
+Team Lotus   Brazilian Grand Prix      1         Team Lotus   Brazilian Grand Prix      2
+Team Lotus   Detroit Grand Prix        2         Team Lotus   Detroit Grand Prix        1
+Team Lotus   Dutch Grand Prix          1
+Team Lotus   European Grand Prix       1
+Team Lotus   German Grand Prix         1         Team Lotus   German Grand Prix         2
+Team Lotus   Hungarian Grand Prix      2
+Team Lotus   Italian Grand Prix        2         Team Lotus   Italian Grand Prix        1
+Team Lotus   Japanese Grand Prix       1
+Team Lotus   Mexican Grand Prix        1         Team Lotus   Mexican Grand Prix        1
+Team Lotus   Monaco Grand Prix         2         Team Lotus   Monaco Grand Prix         1
+Team Lotus   Portuguese Grand Prix     1         Team Lotus   Portuguese Grand Prix     2
+Team Lotus   San Marino Grand Prix     1         Team Lotus   San Marino Grand Prix     2
+Team Lotus   Spanish Grand Prix        2
+Toleman      British Grand Prix        1
+Toleman      Monaco Grand Prix         1
+Toleman      Portuguese Grand Prix     1
+                                                 Team Lotus   Australian Grand Prix     3
+                                                 Team Lotus   British Grand Prix        3
+                                                 Team Lotus   Canadian Grand Prix       2
+                                                 Team Lotus   French Grand Prix         3
+                                                 Team Lotus   South African Grand Prix  1
+                                                 Toleman      Austrian Grand Prix       1
+                                                 Toleman      Belgian Grand Prix        1
+                                                 Toleman      Brazilian Grand Prix      1
+                                                 Toleman      Canadian Grand Prix       1
+                                                 Toleman      Dallas Grand Prix         1
+                                                 Toleman      Detroit Grand Prix        1
+                                                 Toleman      Dutch Grand Prix          1
+                                                 Toleman      European Grand Prix       1
+                                                 Toleman      French Grand Prix         1
+                                                 Toleman      German Grand Prix         1
+                                                 Toleman      San Marino Grand Prix     1
+                                                 Toleman      South African Grand Prix  1
+                                                 Williams     Brazilian Grand Prix      1
+                                                 Williams     Pacific Grand Prix        1
+                                                 Williams     San Marino Grand Prix     1
+
+==============================================================
+Question 15) (7 points) The Monza, Spa, Monaco, and Silverstone are circuits with the largest number of races (circuitids are 14, 13, 6, and 9, respectively). Find the top 10 reasons (status) for cars not finishing in the races of each of the four circuits. Execlude the 'Finished' status (statusid = 1) and any status with the word 'Lap'. 
+
+Expected output:
+status              Spa  status              Monaco  status              Silverstone  status              Monza
+------------------  ---  ------------------  ------  ------------------  -----------  ------------------  -----
+Engine              101  Engine              83      Engine              107          Engine              213
+Collision           47   Collision           69      Collision           33           Collision           38
+Accident            46   Accident            117     Accident            37           Accident            51
+Gearbox             43   Gearbox             88      Gearbox             39           Gearbox             56
+Spun off            37   Spun off            66      Spun off            45           Spun off            52
+Did not qualify     24   Did not qualify     164     Did not qualify     43           Did not qualify     103
+Withdrew            23   Withdrew            24                                       Withdrew            29
+Did not prequalify  17   Did not prequalify  34      Did not prequalify  27           Did not prequalify  21
+Transmission        14   Transmission        22      Transmission        19
+Suspension          11   Suspension          37      Suspension          16           Suspension          38
+                                                     Electrical          18
+                                                                                      Clutch              21
