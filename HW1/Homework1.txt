@@ -1,0 +1,790 @@
+CS 348 - Homework 1: SQL (Joins, Aggregations, Set Operators)
+(100 Points)
+Spring 2026
+
+Due on: 2/2/2026 at 11:59 pm 
+This assignment is to be completed by individuals. 
+There will be a 10% penalty if the homework is submitted 24 hours after the due date, a 20% penalty if the homework is submitted 48 hours after the due date, or a 30% penalty if the homework is submitted 72 hours after the due date. The homework will not be accepted after 72 hours, as a solution will be posted by then.
+
+Submission Instructions: 
+Submit your answers using the hw1.py skeleton file included with this assignment (look at the homework tab in Brightspace/content). The python file is read by the autograder. It is important to have a syntax-error free file. Write your queries in the query1 to query15 functions. Your query answer should have the same attributes(columns) exactly in the same order as the expected result shown in each question. However, the rows can be in any order unless a specific order is required by the question. Column headers can be different. Before submitting your Python file execute the file using the command: Python3 hw1.py The output should contain all of your queries. Getting the correct output ensures that the autograder will be able to read your queries.
+
+The homework will be submitted in Gradescope. 
+Make sure you submit the correct file (hw1.py). 
+
+Database instructions:
+For this assignment, use Formula1.sqlite SQLite database included with this assignment. You can open the database by simply typing .open Formula1.sqlite in the SQLite shell. For nice layout in SQLite shell, run the commands 
+.mode column 
+.headers on
+
+Grading:
+This assignment will be auto-graded using SQLite. You are highly encouraged to use SQLite shell to test your queries before submitting your assignment. Grading will use a different database instance than the one given to students to test their queries. Therefore, make sure your queries are robust and that they work on any data instance. There is no partial credit in this homework.
+
+
+===================================================================
+Database:
+
+Dataset source: https://www.kaggle.com/datasets/davidcochran/formula-1-race-data-sqlite
+
+Database Schema:
+
+TABLE drivers (
+     driverId INTEGER PRIMARY KEY, 
+     driverRef VARCHAR, 
+     number VARCHAR, 
+     code VARCHAR, 
+     forename VARCHAR, 
+     surname VARCHAR, 
+     dob VARCHAR, 
+     nationality VARCHAR, 
+     url VARCHAR)
+
+TABLE constructors // Car manfacturers, such as McLaren and Ferrari
+(
+    constructorId primary key,
+    constructorRef,
+    name,
+    nationality,
+    url,
+)
+
+TABLE races ( // A Formula one season (e.g., 2017 season) includes multiple races.
+  raceId INTEGER PRIMARY KEY, 
+  year INTEGER, 
+  round INTEGER, 
+  circuitId INTEGER REFERENCES circuits (circuitId),  // Foreign key to circuits table
+  name VARCHAR, 
+  date DATE, 
+  time TIME,
+  url VARCHAR)
+
+TABLE circuits (
+  circuitId INTEGER PRIMARY KEY, 
+  circuitRef VARCHAR, 
+  name VARCHAR, 
+  location VARCHAR, 
+  country VARCHAR, 
+  lat DECIMAL (8, 6), 
+  lng DECIMAL (9, 6), 
+  alt INTEGER, 
+  url VARCHAR)
+
+TABLE results // contains the results in an individual race. The constructor refers to the manfacturer of the car a driver is using in the race.
+(
+    resultId
+        constraint results_pk
+            primary key,
+    raceId          INTEGER
+        references races,     // Foreign key to races table
+    driverId        INTEGER
+        references drivers,   // Foreign key to drivers table
+    constructorId   INTEGER
+        references constructors,  // Foreign key to constructors table
+    number          INTEGER,
+    grid            INTEGER,
+    position        INTEGER,
+    positionText    VARCHAR,
+    positionOrder   INTEGER,
+    points          INTEGER,
+    laps            INTEGER,
+    time            VARCHAR,
+    milliseconds    INTEGER,
+    fastestLap      VARCHAR,
+    rank            INTEGER,
+    fastestLapTime  VARCHAR,
+    fastestLapSpeed DECIMAL,
+    statusId        INTEGER
+);
+
+
+constructor_results     // includes constructor results in a race. Note that each constructor usually has two drivers in a race.
+
+TABLE constructor_results (
+  constructorResultsId INTEGER PRIMARY KEY, 
+  raceId INTEGER REFERENCES races (raceId), 
+  constructorId INTEGER REFERENCES constructors (constructorId), 
+  points INTEGER, 
+  status VARCHAR);
+
+// An F1 season includes multiple races. driver_standings shows the driver standings after each race (drivers collect points in each race). Points are based on the driver final position in the race. For the final standings in a season check the standings after the last race in the season.
+
+TABLE driver_standings (
+  driverStandingsId INTEGER PRIMARY KEY, 
+  raceId INTEGER REFERENCES races (raceId), 
+  driverId INTEGER REFERENCES drivers (driverId), 
+  points INTEGER, 
+  position INTEGER, 
+  positionText VARCHAR, 
+  wins INTEGER);
+
+// Similar to the previous table, constructor_standings keep track of the constructor standings after each race. Note that a constructor collects points through its two drivers.
+
+TABLE constructor_standings (
+  constructorStandingsId INTEGER PRIMARY KEY, 
+  raceId INTEGER REFERENCES races (raceId), 
+  constructorId INTEGER REFERENCES constructors (constructorId), 
+  points INTEGER, 
+  position INTEGER, 
+  positionText VARCHAR, 
+  wins INTEGER);
+
+
+The qualifying, pitstops, and laptimes tables are not use in this homework and can be discarded.
+===================================================================  
+
+Q1) (6 points) List the races in the first Formula One season in 1950.
+
+Expected Result:
+
+raceId  year  round  circuitId  name                date        url
+------  ----  -----  ---------  ------------------  ----------  ----------------------------------------------------
+833     1950  1      9          British Grand Prix  1950-05-13  http://en.wikipedia.org/wiki/1950_British_Grand_Prix
+834     1950  2      6          Monaco Grand Prix   1950-05-21  http://en.wikipedia.org/wiki/1950_Monaco_Grand_Prix
+835     1950  3      19         Indianapolis 500    1950-05-30  http://en.wikipedia.org/wiki/1950_Indianapolis_500
+836     1950  4      66         Swiss Grand Prix    1950-06-04  http://en.wikipedia.org/wiki/1950_Swiss_Grand_Prix
+837     1950  5      13         Belgian Grand Prix  1950-06-18  http://en.wikipedia.org/wiki/1950_Belgian_Grand_Prix
+838     1950  6      55         French Grand Prix   1950-07-02  http://en.wikipedia.org/wiki/1950_French_Grand_Prix
+839     1950  7      14         Italian Grand Prix  1950-09-03  http://en.wikipedia.org/wiki/1950_Italian_Grand_Prix
+
+============================
+Q2) (6 points) Adjust the previous query by adding the location and country (from the circuit table) of each race.
+
+Expected Result:
+
+year  round  circuitId  name                date        location      country
+----  -----  ---------  ------------------  ----------  ------------  -----------
+1950  1      9          British Grand Prix  1950-05-13  Silverstone   UK
+1950  2      6          Monaco Grand Prix   1950-05-21  Monte-Carlo   Monaco
+1950  3      19         Indianapolis 500    1950-05-30  Indianapolis  USA
+1950  4      66         Swiss Grand Prix    1950-06-04  Bern          Switzerland
+1950  5      13         Belgian Grand Prix  1950-06-18  Spa           Belgium
+1950  6      55         French Grand Prix   1950-07-02  Reims         France
+1950  7      14         Italian Grand Prix  1950-09-03  Monza         Italy
+
+============================
+Q3) (6 points) Race number 42 (raceid = 42) is the last race in Indianapolis. 
+Retrieve the results of that race. The main table you need for this query is the results table.
+You also need information from the drivers, races, and constructors tables.
+You can hardcode the raceid (42) in your SQL.
+
+Expected Result:
+raceId  name                      position  driverId  forename    surname      constructorId  name
+------  ------------------------  --------  --------  ----------  -----------  -------------  -----------
+42      United States Grand Prix  1         1         Lewis       Hamilton     1              McLaren
+42      United States Grand Prix  2         4         Fernando    Alonso       1              McLaren
+42      United States Grand Prix  3         13        Felipe      Massa        6              Ferrari
+42      United States Grand Prix  4         8         Kimi        R?_ikk?nen   6              Ferrari
+42      United States Grand Prix  5         5         Heikki      Kovalainen   4              Renault
+42      United States Grand Prix  6         15        Jarno       Trulli       7              Toyota
+42      United States Grand Prix  7         17        Mark        Webber       9              Red Bull
+42      United States Grand Prix  8         20        Sebastian   Vettel       2              BMW Sauber
+42      United States Grand Prix  9         21        Giancarlo   Fisichella   4              Renault
+42      United States Grand Prix  10        25        Alexander   Wurz         3              Williams
+42      United States Grand Prix  11        19        Anthony     Davidson     8              Super Aguri
+42      United States Grand Prix  12        18        Jenson      Button       11             Honda
+42      United States Grand Prix  13        26        Scott       Speed        5              Toro Rosso
+42      United States Grand Prix  14        16        Adrian      Sutil        12             Spyker
+42      United States Grand Prix  15        27        Christijan  Albers       12             Spyker
+42      United States Grand Prix  16        3         Nico        Rosberg      3              Williams
+42      United States Grand Prix  17        24        Vitantonio  Liuzzi       5              Toro Rosso
+42      United States Grand Prix            2         Nick        Heidfeld     2              BMW Sauber
+42      United States Grand Prix            23        Ralf        Schumacher   7              Toyota
+42      United States Grand Prix            11        Takuma      Sato         8              Super Aguri
+42      United States Grand Prix            14        David       Coulthard    9              Red Bull
+42      United States Grand Prix            22        Rubens      Barrichello  11             Honda
+
+============================
+Q4) (6 points) A formula One season includes multiple races. 
+The driver_standings table keeps track of the driver standing after every race. 
+List the final standings for the 2017 season (standings after the race with raceid = 988).
+You can hardcode the raceid (988) in your SQL.
+
+Expected Result:
+
+raceId  name                  forename   surname      position  points  wins
+------  --------------------  ---------  -----------  --------  ------  ----
+988     Abu Dhabi Grand Prix  Lewis      Hamilton     1         363     9
+988     Abu Dhabi Grand Prix  Sebastian  Vettel       2         317     5
+988     Abu Dhabi Grand Prix  Valtteri   Bottas       3         305     3
+988     Abu Dhabi Grand Prix  Kimi       R?_ikk?nen   4         205     0
+988     Abu Dhabi Grand Prix  Daniel     Ricciardo    5         200     1
+988     Abu Dhabi Grand Prix  Max        Verstappen   6         168     2
+988     Abu Dhabi Grand Prix  Sergio     P?rez        7         100     0
+988     Abu Dhabi Grand Prix  Esteban    Ocon         8         87      0
+988     Abu Dhabi Grand Prix  Carlos     Sainz        9         54      0
+988     Abu Dhabi Grand Prix  Nico       H?_lkenberg  10        43      0
+988     Abu Dhabi Grand Prix  Felipe     Massa        11        43      0
+988     Abu Dhabi Grand Prix  Lance      Stroll       12        40      0
+988     Abu Dhabi Grand Prix  Romain     Grosjean     13        28      0
+988     Abu Dhabi Grand Prix  Kevin      Magnussen    14        19      0
+988     Abu Dhabi Grand Prix  Fernando   Alonso       15        17      0
+988     Abu Dhabi Grand Prix  Stoffel    Vandoorne    16        13      0
+988     Abu Dhabi Grand Prix  Jolyon     Palmer       17        8       0
+988     Abu Dhabi Grand Prix  Pascal     Wehrlein     18        5       0
+988     Abu Dhabi Grand Prix  Daniil     Kvyat        19        5       0
+988     Abu Dhabi Grand Prix  Marcus     Ericsson     20        0       0
+988     Abu Dhabi Grand Prix  Pierre     Gasly        21        0       0
+988     Abu Dhabi Grand Prix  Antonio    Giovinazzi   22        0       0
+988     Abu Dhabi Grand Prix  Brendon    Hartley      23        0       0
+988     Abu Dhabi Grand Prix  Jenson     Button       24        0       0
+988     Abu Dhabi Grand Prix  Paul       di Resta     25        0       0
+
+===================================================================
+Q5) (7 points) Who won the last race in 2017? List the full results of that race. You can hardcode the raceid (988) in your SQL.
+
+# status from status table
+Expected Result:
+Note that the following result is wide (if text wrapping is disabled). 
+Scroll to the right to see all columns.
+
+raceId  name                  position  forename   surname      constructor   laps  milliseconds  statusId  status
+------  --------------------  --------  ---------  -----------  ------------  ----  ------------  --------  ----------
+988     Abu Dhabi Grand Prix  1         Valtteri   Bottas       Mercedes      55    5654062       1         Finished
+988     Abu Dhabi Grand Prix  2         Lewis      Hamilton     Mercedes      55    5657961       1         Finished
+988     Abu Dhabi Grand Prix  3         Sebastian  Vettel       Ferrari       55    5673392       1         Finished
+988     Abu Dhabi Grand Prix  4         Kimi       R?_ikk?nen   Ferrari       55    5699448       1         Finished
+988     Abu Dhabi Grand Prix  5         Max        Verstappen   Red Bull      55    5700331       1         Finished
+988     Abu Dhabi Grand Prix  6         Nico       H?_lkenberg  Renault       55    5739775       1         Finished
+988     Abu Dhabi Grand Prix  7         Sergio     P?rez        Force India   55    5746124       1         Finished
+988     Abu Dhabi Grand Prix  8         Esteban    Ocon         Force India   55    5752973       1         Finished
+988     Abu Dhabi Grand Prix  9         Fernando   Alonso       McLaren       54                  11        +1 Lap
+988     Abu Dhabi Grand Prix  10        Felipe     Massa        Williams      54                  11        +1 Lap
+988     Abu Dhabi Grand Prix  11        Romain     Grosjean     Haas F1 Team  54                  11        +1 Lap
+988     Abu Dhabi Grand Prix  12        Stoffel    Vandoorne    McLaren       54                  11        +1 Lap
+988     Abu Dhabi Grand Prix  13        Kevin      Magnussen    Haas F1 Team  54                  11        +1 Lap
+988     Abu Dhabi Grand Prix  14        Pascal     Wehrlein     Sauber        54                  11        +1 Lap
+988     Abu Dhabi Grand Prix  15        Brendon    Hartley      Toro Rosso    54                  11        +1 Lap
+988     Abu Dhabi Grand Prix  16        Pierre     Gasly        Toro Rosso    54                  11        +1 Lap
+988     Abu Dhabi Grand Prix  17        Marcus     Ericsson     Sauber        54                  11        +1 Lap
+988     Abu Dhabi Grand Prix  18        Lance      Stroll       Williams      54                  11        +1 Lap
+988     Abu Dhabi Grand Prix            Carlos     Sainz        Renault       31                  36        Wheel
+988     Abu Dhabi Grand Prix            Daniel     Ricciardo    Red Bull      20                  9         Hydraulics
+
+====================================================================
+Q6) (6 points) Similar to driver_standings, the constructor_standings keep track of constructor standings after each race. 
+List constructor standings after the last race in 2017 (raceid = 988)
+
+Expected Result:
+
+raceId  name                  constructorId  constructor   position  points  wins
+------  --------------------  -------------  ------------  --------  ------  ----
+988     Abu Dhabi Grand Prix  131            Mercedes      1         668     12
+988     Abu Dhabi Grand Prix  6              Ferrari       2         522     5
+988     Abu Dhabi Grand Prix  9              Red Bull      3         368     3
+988     Abu Dhabi Grand Prix  10             Force India   4         187     0
+988     Abu Dhabi Grand Prix  3              Williams      5         83      0
+988     Abu Dhabi Grand Prix  4              Renault       6         57      0
+988     Abu Dhabi Grand Prix  5              Toro Rosso    7         53      0
+988     Abu Dhabi Grand Prix  210            Haas F1 Team  8         47      0
+988     Abu Dhabi Grand Prix  1              McLaren       9         30      0
+988     Abu Dhabi Grand Prix  15             Sauber        10        5       0
+
+=====================================
+Q7) (7 points) Find any driver whose nationality matches the nationality of his constructor. 
+Include only drivers who recieved 9 or more points in any particular race (i.e, a driver with 9 or more points in one of the rows of the results table)
+
+Expected Result:
+
+forename     surname     constructor      nationality
+-----------  ----------  ---------------  -----------
+Lewis        Hamilton    McLaren          British
+David        Coulthard   McLaren          British
+Johnny       Herbert     Stewart          British
+Damon        Hill        Williams         British
+Olivier      Panis       Ligier           French
+David        Coulthard   Williams         British
+Nigel        Mansell     Williams         British
+Jenson       Button      Brawn            British
+Alessandro   Nannini     Benetton         Italian
+Michele      Alboreto    Ferrari          Italian
+John         Watson      McLaren          British
+Alain        Prost       Renault          French
+Ren?         Arnoux      Renault          French
+Jacques      Laffite     Ligier           French
+Didier       Pironi      Ligier           French
+Jean-Pierre  Jabouille   Renault          French
+Patrick      Depailler   Ligier           French
+James        Hunt        McLaren          British
+James        Hunt        Hesketh          British
+Jackie       Stewart     Tyrrell          British
+Peter        Gethin      BRM              British
+Jackie       Stewart     March            British
+Graham       Hill        Lotus-Ford       British
+Jim          Clark       Lotus-Ford       British
+Dan          Gurney      Eagle-Weslake    American
+Jackie       Stewart     BRM              British
+Ludovico     Scarfiotti  Ferrari          Italian
+Jim          Clark       Lotus-BRM        British
+John         Surtees     Cooper-Maserati  British
+Jim          Clark       Lotus-Climax     British
+Graham       Hill        BRM              British
+Lorenzo      Bandini     Ferrari          Italian
+Stirling     Moss        Lotus-Climax     British
+Giancarlo    Baghetti    Ferrari          Italian
+Innes        Ireland     Lotus-Climax     British
+Stirling     Moss        Cooper-Climax    British
+Stirling     Moss        Vanwall          British
+Alberto      Ascari      Ferrari          Italian
+Bill         Vukovich    Kurtis Kraft     American
+Piero        Taruffi     Ferrari          Italian
+Lee          Wallard     Kurtis Kraft     American
+Nino         Farina      Alfa Romeo       Italian
+Johnnie      Parsons     Kurtis Kraft     American
+Nico         Rosberg     Mercedes         German
+Jenson       Button      McLaren          British
+Michael      Schumacher  Mercedes         German
+
+============================================================
+Q8) (7 points) List nationalities that have drivers but have no constructors.
+
+Expected Result:
+
+nationality
+-----------------
+American-Italian
+Argentine
+Argentine-Italian
+Belgian
+Chilean
+Colombian
+Czech
+Danish
+Finnish
+Hungarian
+Indonesian
+Liechtensteiner
+Monegasque
+New Zealander
+Polish
+Portuguese
+Swedish
+Thai
+Uruguayan
+Venezuelan
+
+=========================================================================
+
+Q9) (6 points) Display the total number of points in all years for each constructor. 
+Keep only constructors with 100 points or more.
+
+Expected Result:
+
+constructor                sum_points
+-------------------------  ----------
+Ferrari                    8083.77
+McLaren                    5314.5
+Red Bull                   3888.5
+Mercedes                   3857.14
+Williams                   3559.0
+Renault                    1383
+Team Lotus                 995
+Force India                987
+Benetton                   861.5
+Tyrrell                    711
+Lotus F1                   706
+Brabham                    631
+BRM                        537.5
+Sauber                     509
+Ligier                     388
+Toro Rosso                 382
+Cooper-Climax              336.5
+Maserati                   313.14
+BMW Sauber                 308
+Jordan                     291
+Lotus-Climax               281
+Toyota                     278.5
+BAR                        227
+Alfa Romeo                 217
+Lotus-Ford                 209
+Brabham-Repco              175
+Brawn                      172
+Honda                      156
+March                      148.0
+McLaren-Ford               143
+Arrows                     142
+Matra-Ford                 130
+Kurtis Kraft               130.0
+Vanwall                    108
+
+======================================================
+Q10) (6 points) Modify the previous query to show the total points in every year (for each constructor).
+Keep only constructor-year totals that are greater than or equal 100. 
+
+Expected Result:
+
+constructor    year  sum_points
+-------------  ----  ----------
+BAR            2004  119
+BMW Sauber     2007  101
+BMW Sauber     2008  135
+Benetton       1994  103
+Benetton       1995  147
+Brabham-Repco  1967  100
+Brawn          2009  172
+Cooper-Climax  1960  102
+Ferrari        1952  120.5
+Ferrari        1953  122.5
+Ferrari        1977  114
+Ferrari        1979  113
+Ferrari        1990  110
+Ferrari        1997  102
+Ferrari        1998  133
+Ferrari        1999  128
+Ferrari        2000  170
+Ferrari        2001  179
+Ferrari        2002  221
+Ferrari        2003  158
+Ferrari        2004  262
+Ferrari        2005  100
+Ferrari        2006  201
+Ferrari        2007  204
+Ferrari        2008  172
+Ferrari        2010  396
+Ferrari        2011  375
+Ferrari        2012  400
+Ferrari        2013  354
+Ferrari        2014  216
+Ferrari        2015  428
+Ferrari        2016  398
+Ferrari        2017  522
+Force India    2012  109
+Force India    2014  155
+Force India    2015  136
+Force India    2016  173
+Force India    2017  187
+Lotus F1       2012  303
+Lotus F1       2013  315
+McLaren        1984  143.5
+McLaren        1988  199
+McLaren        1989  141
+McLaren        1990  121
+McLaren        1991  139
+McLaren        1998  156
+McLaren        1999  124
+McLaren        2000  162
+McLaren        2001  102
+McLaren        2003  142
+McLaren        2005  182
+McLaren        2006  110
+McLaren        2007  218
+McLaren        2008  151
+McLaren        2010  454
+McLaren        2011  497
+McLaren        2012  378
+McLaren        2013  122
+McLaren        2014  181
+Mercedes       2010  214
+Mercedes       2011  165
+Mercedes       2012  142
+Mercedes       2013  360
+Mercedes       2014  701
+Mercedes       2015  703
+Mercedes       2016  765
+Mercedes       2017  668
+Red Bull       2009  153.5
+Red Bull       2010  498
+Red Bull       2011  650
+Red Bull       2012  460
+Red Bull       2013  596
+Red Bull       2014  405
+Red Bull       2015  187
+Red Bull       2016  468
+Red Bull       2017  368
+Renault        2004  105
+Renault        2005  191
+Renault        2006  206
+Renault        2010  163
+Sauber         2012  126
+Team Lotus     1973  107
+Team Lotus     1978  116
+Tyrrell        1973  118
+Williams       1980  120
+Williams       1986  141
+Williams       1987  137
+Williams       1991  125
+Williams       1992  164
+Williams       1993  168
+Williams       1994  118
+Williams       1995  118
+Williams       1996  175
+Williams       1997  123
+Williams       2003  144
+Williams       2014  320
+Williams       2015  257
+Williams       2016  138
+
+======================================================
+Q11) (6 points) Ferrari is a major F1 constructor since the 1950s. 
+Show the total points of Ferrari in the years where Ferrari had points. 
+
+Expected Result:
+
+constructor  year  sum_points
+-----------  ----  ----------
+Ferrari      1950  18
+Ferrari      1951  86
+Ferrari      1952  120.5
+Ferrari      1953  122.5
+Ferrari      1954  80.28
+Ferrari      1955  33.99
+Ferrari      1956  83.0
+Ferrari      1957  48
+Ferrari      1958  93
+Ferrari      1959  67
+Ferrari      1960  43
+Ferrari      1961  99
+Ferrari      1962  30
+Ferrari      1963  27
+Ferrari      1964  64
+Ferrari      1965  32
+Ferrari      1966  42
+Ferrari      1967  23
+Ferrari      1968  37
+Ferrari      1969  7
+Ferrari      1970  76
+Ferrari      1971  44
+Ferrari      1972  47
+Ferrari      1973  14
+Ferrari      1974  90
+Ferrari      1975  89.5
+Ferrari      1976  99
+Ferrari      1977  114
+Ferrari      1978  65
+Ferrari      1979  113
+Ferrari      1980  8
+Ferrari      1981  34
+Ferrari      1982  74
+Ferrari      1983  89
+Ferrari      1984  57.5
+Ferrari      1985  82
+Ferrari      1986  37
+Ferrari      1987  53
+Ferrari      1988  65
+Ferrari      1989  59
+Ferrari      1990  110
+Ferrari      1991  55.5
+Ferrari      1992  21
+Ferrari      1993  28
+Ferrari      1994  71
+Ferrari      1995  73
+Ferrari      1996  70
+Ferrari      1997  102
+Ferrari      1998  133
+Ferrari      1999  128
+Ferrari      2000  170
+Ferrari      2001  179
+Ferrari      2002  221
+Ferrari      2003  158
+Ferrari      2004  262
+Ferrari      2005  100
+Ferrari      2006  201
+Ferrari      2007  204
+Ferrari      2008  172
+Ferrari      2009  70
+Ferrari      2010  396
+Ferrari      2011  375
+Ferrari      2012  400
+Ferrari      2013  354
+Ferrari      2014  216
+Ferrari      2015  428
+Ferrari      2016  398
+Ferrari      2017  522
+
+=============================
+Q12) (7 points) Find any pair of drivers who have the same surname and the same nationality.
+
+Expected Result:
+
+d1_forename  d1_surname  d2_forename  d2_surname  nationality
+-----------  ----------  -----------  ----------  -------------
+Lewis        Hamilton    Duncan       Hamilton    British
+Kazuki       Nakajima    Satoru       Nakajima    Japanese
+Ralf         Schumacher  Michael      Schumacher  German
+Markus       Winkelhock  Joachim      Winkelhock  German
+Markus       Winkelhock  Manfred      Winkelhock  German
+Jacques      Villeneuve  Gilles       Villeneuve  Canadian
+Jos          Verstappen  Max          Verstappen  Dutch
+Justin       Wilson      Vic          Wilson      British
+Damon        Hill        Graham       Hill        British
+Jan          Magnussen   Kevin        Magnussen   Danish
+Aguri        Suzuki      Toshio       Suzuki      Japanese
+David        Brabham     Gary         Brabham     Australian
+David        Brabham     Jack         Brabham     Australian
+Ayrton       Senna       Bruno        Senna       Brazilian
+Christian    Fittipaldi  Emerson      Fittipaldi  Brazilian
+Christian    Fittipaldi  Wilson       Fittipaldi  Brazilian
+Michael      Andretti    Mario        Andretti    American
+Gary         Brabham     Jack         Brabham     Australian
+Jonathan     Palmer      Jolyon       Palmer      British
+Joachim      Winkelhock  Manfred      Winkelhock  German
+Jean-Louis   Schlesser   Jo           Schlesser   French
+Teo          Fabi        Corrado      Fabi        Italian
+Jody         Scheckter   Ian          Scheckter   South African
+Emerson      Fittipaldi  Wilson       Fittipaldi  Brazilian
+Vittorio     Brambilla   Ernesto      Brambilla   Italian
+Teddy        Pilette     Andr?        Pilette     Belgian
+Jackie       Stewart     Ian          Stewart     British
+Jackie       Stewart     Jimmy        Stewart     British
+Pedro        Rodr?_guez  Ricardo      Rodr?_guez  Mexican
+John         Miles       Ken          Miles       British
+Bobby        Unser       Jerry        Unser       American
+John         Taylor      Dennis       Taylor      British
+John         Taylor      Henry        Taylor      British
+John         Taylor      Mike         Taylor      British
+John         Taylor      Trevor       Taylor      British
+Trevor       Taylor      Dennis       Taylor      British
+Trevor       Taylor      Henry        Taylor      British
+Trevor       Taylor      Mike         Taylor      British
+Tim          Parnell     Reg          Parnell     British
+Stirling     Moss        Bill         Moss        British
+Henry        Taylor      Dennis       Taylor      British
+Henry        Taylor      Mike         Taylor      British
+Jim          Rathmann    Dick         Rathmann    American
+Red          Amick       George       Amick       American
+Eddie        Russo       Paul         Russo       American
+Mike         Taylor      Dennis       Taylor      British
+Peter        Whitehead   Graham       Whitehead   British
+Jimmy        Stewart     Ian          Stewart     British
+
+==================================================================
+Q13) (9 points) The previous query still has some repeatitions, such as with the 'Taylor' surename. 
+Adust the query to list every name only once as in the following result. 
+Sort your output by nationality, surename, then forename.
+
+Expected Result:
+
+forename    surname     nationality
+----------  ----------  -------------
+George      Amick       American
+Red         Amick       American
+Mario       Andretti    American
+Michael     Andretti    American
+Dick        Rathmann    American
+Jim         Rathmann    American
+Eddie       Russo       American
+Paul        Russo       American
+Bobby       Unser       American
+Jerry       Unser       American
+David       Brabham     Australian
+Gary        Brabham     Australian
+Jack        Brabham     Australian
+Andr?       Pilette     Belgian
+Teddy       Pilette     Belgian
+Christian   Fittipaldi  Brazilian
+Emerson     Fittipaldi  Brazilian
+Wilson      Fittipaldi  Brazilian
+Ayrton      Senna       Brazilian
+Bruno       Senna       Brazilian
+Duncan      Hamilton    British
+Lewis       Hamilton    British
+Damon       Hill        British
+Graham      Hill        British
+John        Miles       British
+Ken         Miles       British
+Bill        Moss        British
+Stirling    Moss        British
+Jolyon      Palmer      British
+Jonathan    Palmer      British
+Reg         Parnell     British
+Tim         Parnell     British
+Ian         Stewart     British
+Jackie      Stewart     British
+Jimmy       Stewart     British
+Dennis      Taylor      British
+Henry       Taylor      British
+John        Taylor      British
+Mike        Taylor      British
+Trevor      Taylor      British
+Graham      Whitehead   British
+Peter       Whitehead   British
+Justin      Wilson      British
+Vic         Wilson      British
+Gilles      Villeneuve  Canadian
+Jacques     Villeneuve  Canadian
+Jan         Magnussen   Danish
+Kevin       Magnussen   Danish
+Jos         Verstappen  Dutch
+Max         Verstappen  Dutch
+Jean-Louis  Schlesser   French
+Jo          Schlesser   French
+Michael     Schumacher  German
+Ralf        Schumacher  German
+Joachim     Winkelhock  German
+Manfred     Winkelhock  German
+Markus      Winkelhock  German
+Ernesto     Brambilla   Italian
+Vittorio    Brambilla   Italian
+Corrado     Fabi        Italian
+Teo         Fabi        Italian
+Kazuki      Nakajima    Japanese
+Satoru      Nakajima    Japanese
+Aguri       Suzuki      Japanese
+Toshio      Suzuki      Japanese
+Pedro       Rodr?_guez  Mexican
+Ricardo     Rodr?_guez  Mexican
+Ian         Scheckter   South African
+Jody        Scheckter   South African
+
+==================================================================
+
+Q14) (7 points) Find races with 15 driveres or less. 
+You can count driveres in a race using the results table. 
+Note that many 2018 races have no records in this database (i.e., no rows in the results table). 
+Therefore, the count of driveres in those races is zero.
+
+Expected Result:
+
+raceId  year  name                      date        cnt
+------  ----  ------------------------  ----------  ---
+989     2018  Australian Grand Prix     2018-03-25  0
+990     2018  Bahrain Grand Prix        2018-04-08  0
+991     2018  Chinese Grand Prix        2018-05-15  0
+992     2018  Azerbaijan Grand Prix     2018-04-29  0
+993     2018  Spanish Grand Prix        2018-05-13  0
+994     2018  Monaco Grand Prix         2018-05-27  0
+995     2018  Canadian Grand Prix       2018-06-10  0
+996     2018  French Grand Prix         2018-06-24  0
+997     2018  Austrian Grand Prix       2018-07-01  0
+998     2018  British Grand Prix        2018-07-08  0
+999     2018  German Grand Prix         2018-07-22  0
+1000    2018  Hungarian Grand Prix      2018-07-29  0
+1001    2018  Belgian Grand Prix        2018-08-26  0
+1002    2018  Italian Grand Prix        2018-09-02  0
+1003    2018  Singapore Grand Prix      2018-09-16  0
+1004    2018  Russian Grand Prix        2018-09-30  0
+1005    2018  Japanese Grand Prix       2018-10-07  0
+1006    2018  United States Grand Prix  2018-10-21  0
+1007    2018  Mexican Grand Prix        2018-10-28  0
+1008    2018  Brazilian Grand Prix      2018-11-11  0
+1009    2018  Abu Dhabi Grand Prix      2018-11-25  0
+765     1958  Argentine Grand Prix      1958-01-19  10
+660     1969  French Grand Prix         1969-07-06  13
+827     1951  Belgian Grand Prix        1951-06-17  13
+470     1982  San Marino Grand Prix     1982-04-25  14
+657     1969  Spanish Grand Prix        1969-05-04  14
+662     1969  German Grand Prix         1969-08-03  14
+668     1968  Spanish Grand Prix        1968-05-12  14
+801     1954  Belgian Grand Prix        1954-06-20  14
+837     1950  Belgian Grand Prix        1950-06-18  14
+659     1969  Dutch Grand Prix          1969-06-21  15
+663     1969  Italian Grand Prix        1969-09-07  15
+683     1967  French Grand Prix         1967-07-02  15
+753     1960  Portuguese Grand Prix     1960-08-14  15
+758     1959  Dutch Grand Prix          1959-05-31  15
+761     1959  German Grand Prix         1959-08-02  15
+773     1958  Portuguese Grand Prix     1958-08-24  15
+779     1957  French Grand Prix         1957-07-07  15
+784     1956  Argentine Grand Prix      1956-01-22  15
+787     1956  Belgian Grand Prix        1956-06-03  15
+
+=====================================================
+Q15) (8 points) The statusid records the status of a driver in a particular race. 
+Statusid 1 means the driver has finished the race. Other statusid values indicate other issues.
+Find drivers who experienced both 'Water pipe' and 'Fuel leak' issues. 
+Use the results and status tables. 
+
+Expected Result:
+
+driverId  forename  surname  dob         nationality
+--------  --------  -------  ----------  -----------
+347       Jo        Bonnier  31/01/1930  Swedish
