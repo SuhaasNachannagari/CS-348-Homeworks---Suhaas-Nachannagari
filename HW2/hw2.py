@@ -183,56 +183,129 @@ def query10():
 
 def query11():
     return r"""
-SELECT DISTINCT R.raceId, R.name, R.year, Re.position, Re.grid, D.forename, D.surname, C.name
-FROM results Re JOIN races R ON Re.raceId = R.raceId
+        SELECT DISTINCT R.raceId, R.name, R.year, Re.position, Re.grid, D.forename, D.surname, C.name
+        FROM results Re JOIN races R ON Re.raceId = R.raceId
         JOIN drivers D ON Re.driverId = D.driverId
         JOIN constructors C ON Re.constructorId = C.constructorId
-WHERE Re.position BETWEEN 1 AND 10 AND Re.raceId IN (
-      SELECT raceId
-      FROM (
-          SELECT Re2.raceId, SUM(ABS(Re2.grid - Re2.position)) AS total_grid_diff
-          FROM results Re2
-          WHERE Re2.position BETWEEN 1 AND 10
-          GROUP BY Re2.raceId
-          HAVING COUNT(Re2.position) = 10
-      ) AS race_totals
+        WHERE Re.position BETWEEN 1 AND 10 AND Re.raceId IN (
+            SELECT raceId
+            FROM (
+                SELECT Re2.raceId, SUM(ABS(Re2.grid - Re2.position)) AS total_grid_diff
+                FROM results Re2
+                WHERE Re2.position BETWEEN 1 AND 10
+                GROUP BY Re2.raceId
+                HAVING COUNT(Re2.position) = 10
+            ) AS race_totals
 
-      WHERE total_grid_diff = (
-          SELECT MAX(total_grid_diff)
-          FROM (
-              SELECT SUM(ABS(Re3.grid - Re3.position)) AS total_grid_diff
-              FROM results Re3
-              WHERE Re3.position BETWEEN 1 AND 10
-              GROUP BY Re3.raceId
-              HAVING COUNT(Re3.position) = 10
-          ) AS totals2
-      )
-  )
-ORDER BY R.raceId, Re.position;
+            WHERE total_grid_diff = (
+                SELECT MAX(total_grid_diff)
+                FROM (
+                    SELECT SUM(ABS(Re3.grid - Re3.position)) AS total_grid_diff
+                    FROM results Re3
+                    WHERE Re3.position BETWEEN 1 AND 10
+                    GROUP BY Re3.raceId
+                    HAVING COUNT(Re3.position) = 10
+                ) AS totals2
+            )
+        )
+        ORDER BY R.raceId, Re.position;
 """
 
 
 def query12():
     return r""" 
-YOUR SQL QUERY HERE;
+        SELECT R.year, Ds.position, D.forename, D.surname, DS.points, DS.wins
+        FROM driver_standings Ds
+        JOIN drivers D ON Ds.driverId = D.driverId
+        JOIN races R ON Ds.raceId = R.raceId
+        WHERE R.year BETWEEN 2010 AND 2017 AND Ds.position BETWEEN 1 AND 3 AND Ds.raceId = (
+        SELECT R2.raceId
+        FROM races R2
+        WHERE R2.year = R.year AND R2.round = (
+                SELECT MAX(round)
+                FROM races R3
+                WHERE R3.year = R.year
+            )
+        )
+        ORDER BY R.year, DS.position;
 """
 
 
 def query13():
     return r"""
-YOUR SQL QUERY HERE;    
+        SELECT D.forename, D.surname, L1.lap as lap, L1.position as position, L2.lap as lap, L2.position as position
+        FROM laptimes L1 JOIN laptimes L2 ON L1.raceId = L2.raceId AND L1.driverId = L2.driverId AND L2.lap = L1.lap + 1
+        JOIN drivers D ON L1.driverId = D.driverId
+        WHERE L1.raceId = 987 AND L1.lap = (
+            SELECT L_inner.lap
+            FROM laptimes L_inner JOIN laptimes L_next ON L_inner.raceId = L_next.raceId AND L_inner.driverId = L_next.driverId AND L_next.lap = L_inner.lap + 1
+            WHERE L_inner.raceId = 987
+            GROUP BY L_inner.lap
+            HAVING SUM(ABS(L_next.position - L_inner.position)) = (
+                    SELECT MAX(total_change)
+                    FROM (
+                            SELECT SUM(ABS(L_b.position - L_a.position)) AS total_change
+                            FROM laptimes L_a JOIN laptimes L_b ON L_a.raceId = L_b.raceId AND L_a.driverId = L_b.driverId AND L_b.lap = L_a.lap + 1
+                            WHERE L_a.raceId = 987
+                            GROUP BY L_a.lap
+                        )
+            )
+        )
+        ORDER BY L1.position;
 """
 
 
 def query14():
     return r"""
-YOUR SQL QUERY HERE;    
+SELECT F.constructor as constructor, F.race as race, F.finished as Finished, N.constructor as constructor, N.race as race, N.not_finished as Not_Finished
+FROM
+    (SELECT C.name as constructor, R.name as race, COUNT(*) as finished
+     FROM results Re JOIN drivers D ON Re.driverId = D.driverId
+          JOIN constructors C ON Re.constructorId = C.constructorId
+          JOIN races R ON Re.raceId = R.raceId
+     WHERE D.forename = 'Ayrton'
+           AND D.surname = 'Senna'
+           AND Re.statusId = 1
+     GROUP BY C.name, R.name) as F
+FULL OUTER JOIN
+    (SELECT C.name as constructor, R.name as race, COUNT(*) as not_finished
+     FROM results Re JOIN drivers D ON Re.driverId = D.driverId
+          JOIN constructors C ON Re.constructorId = C.constructorId
+          JOIN races R ON Re.raceId = R.raceId
+     WHERE D.forename = 'Ayrton'
+           AND D.surname = 'Senna'
+           AND Re.statusId <> 1
+     GROUP BY C.name, R.name) as N
+ON F.constructor = N.constructor AND F.race = N.race;
 """
 
 
 def query15():
     return r"""  
-YOUR SQL QUERY HERE;
+WITH ranked AS (
+    SELECT r.circuitId, s.status, COUNT(*) AS cnt, ROW_NUMBER() OVER (PARTITION BY r.circuitId ORDER BY COUNT(*) DESC) AS rn
+    FROM results res JOIN races r ON r.raceId = res.raceId JOIN status s ON s.statusId = res.statusId
+    WHERE r.circuitId IN (13, 6, 9, 14) AND res.statusId <> 1 AND s.status NOT LIKE '%Lap%'
+    GROUP BY r.circuitId, s.status
+),
+top_statuses AS (
+    SELECT status
+    FROM ranked
+    WHERE rn <= 10
+    GROUP BY status
+),
+pivoted AS (
+    SELECT ts.status, MAX(CASE WHEN r.circuitId = 13 AND r.rn <= 10 THEN r.cnt END) AS Spa, MAX(CASE WHEN r.circuitId = 6  AND r.rn <= 10 THEN r.cnt END) AS Monaco,
+           MAX(CASE WHEN r.circuitId = 9  AND r.rn <= 10 THEN r.cnt END) AS Silverstone, MAX(CASE WHEN r.circuitId = 14 AND r.rn <= 10 THEN r.cnt END) AS Monza
+    FROM top_statuses ts LEFT JOIN ranked r ON r.status = ts.status
+    GROUP BY ts.status
+)
+SELECT CASE WHEN Spa IS NOT NULL THEN status END AS status, Spa,
+       CASE WHEN Monaco IS NOT NULL THEN status END AS status, Monaco,
+       CASE WHEN Silverstone IS NOT NULL THEN status END AS status, Silverstone,
+       CASE WHEN Monza IS NOT NULL THEN status END AS status, Monza
+FROM pivoted
+ORDER BY Spa, Monaco, Silverstone, Monza DESC;
 """
 
 # Do not edit below
