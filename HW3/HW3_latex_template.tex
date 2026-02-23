@@ -1,0 +1,190 @@
+% Only edit between "% Your Answer Here" and "% End of your Answer".
+
+\documentclass[12pt]{exam}
+\usepackage[utf8]{inputenc}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{multicol}
+\usepackage{listings}
+\usepackage{enumerate}
+\usepackage{blindtext}
+\usepackage{scrextend}
+\usepackage{graphicx}
+\usepackage{comment}
+\usepackage{float}
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=blue,
+    pdftitle={Overleaf Example},
+    pdfpagemode=FullScreen,
+    }
+
+\def\ojoin{\setbox0=\hbox{$\bowtie$}%
+  \rule[-.02ex]{.25em}{.4pt}\llap{\rule[\ht0]{.25em}{.4pt}}}
+\def\leftouterjoin{\mathbin{\ojoin\mkern-5.8mu\bowtie}}
+\def\rightouterjoin{\mathbin{\bowtie\mkern-5.8mu\ojoin}}
+\def\fullouterjoin{\mathbin{\ojoin\mkern-5.8mu\bowtie\mkern-5.8mu\ojoin}}
+
+
+\renewcommand{\choiceshook}{%
+    \setlength{\leftmargin}{15pt}%
+}
+\title{CS 348 - Homework 3 }
+\author{Relational Algebra, Stored Procedures}
+\date{Due Date: 2/22/2026 by 11:59 PM}
+
+\newcommand{\vg}{\textsf{video\_games}}
+\newcommand{\region}{\textsf{region}}
+\newcommand{\gs}{\textsf{games\_sales}}
+\newcommand{\developer}{\textsf{developer}}
+\newcommand{\platform}{\textsf{platform}}
+\newcommand{\result}{\textsf{result}}
+
+\begin{document}
+
+\maketitle
+\noindent
+This assignment is to be completed by individuals. You should only talk to the instructor, and the TAs about this assignment. You may also post questions (and not answers) to Ed Discussion. 
+There will be a 10\% penalty if the homework is submitted 24 hours after the due date, a 20\% penalty if the homework is submitted 48 hours after the due date, or a 30\% penalty if the homework is submitted 72 hours after the due date. The homework will not be accepted after 72 hours, as a solution will be posted by then.
+
+For questions 1 to 9, 
+\begin{itemize}
+    \item Use \textbf{Formula1} SQLite database in Homework 3 (schema included with Homework 1).
+    \item Only use relational algebra operators covered in the class lectures. Sample relational algebra syntax can be found in \textbf{relational\_algebra\_instruction.pdf}.
+    \item \textbf{You need to submit your final relational algebra part as a PDF to Gradescope (Homework 3 (Part 1)) for manual grading.} The pdf file should be compiled from the tex template file provided with this homework. 
+    \item As an optional step, you will be able to test your relational algebra in Gradescope (Homework 3 (Part 1) Autograder) or locally using a relational algebra autograder. You need to write your answer in the template tex file and submit that to the autograder. Autograding will likely help you fix some errors before you submit your PDF. However, the relational-algebra autograding tool is still under development and may not be reliable. Please use it with caution. Note that \textbf{getting a full score in autograding does not guarantee a full score in manual grading}.
+\end{itemize}
+
+For question 10, please also submit in \textbf{Gradescope (Homework 3 (Part 1)) for manual grading}, combining with your RA answers. We only compare your answer with the solution, and no partial points will be given.
+
+For question 11, write your code in the supplied \textbf{skeleton file}. Please submit a \textbf{.sql} file for this part containing only the definitions of your stored procedures to Gradescope . Please follow the \textbf{stored\_procedure\_instruction.pdf} file to write and submit your code. \textbf{This part will only be graded by autograder.}\\ 
+
+\newpage
+
+
+\begin{questions}
+
+%.........  Q1  ..... %	
+\question (7 points): List the name and date of all races in the 1950 season (similar to Q1 in Homework 1). 
+
+\textbf{Answer:} \\
+% Your Answer Here
+
+% End of your Answer
+\newpage
+
+   
+\vspace{50 mm} 
+
+%.........  Q2  ..... %	
+
+\question (7 points): List all possible constructor name and race name pairs (e.g., ('McLaren', 'Australian Grand Prix'), ('McLaren', 'Malaysian Grand Prix'),..., ('McLaren', 'Brazilian Grand Prix'),..., etc.). \\
+
+\textbf{Answer:} \\
+% Your Answer Here
+
+% End of your Answer
+\newpage
+
+
+%.........  Q3  ..... %	
+
+\question (7 points): List the drivers who won the first position in all of the `Monaco Grand Prix' races (all years of this race). Use the race and results tables. Include the driver id, race name, and race date in your result. Use the join operator then the select operator (next question asks for using the select before the join).\\
+
+\textbf{Answer:} \\
+% Your Answer Here
+
+% End of your Answer
+\newpage
+
+%.........  Q4  ..... %	
+
+\question (8 points): Use the equivalence $\sigma_{c} (R\bowtie A) \equiv  (\sigma_{c}R)\bowtie A  $ to rewrite your previous query (i.e., perform the select operations before the join operations). \\
+
+\textbf{Answer:} 
+% Your Answer Here
+
+% End of your Answer
+\newpage
+
+%.........  Q5  ..... %	
+
+\question (7 points):  Redo one of the last two queries using cross product(no join operation is allowed). 
+
+\textbf{Answer:}  \\
+% Your Answer Here
+
+% End of your Answer
+\newpage
+    
+%.........  Q6  ..... %	
+
+\question (8 points): List the names of the constructors who have never won any races (never had the first position). Use the constructor and results tables. (no left outer join operation is allowed in this question).
+
+\textbf{Answer:} \\
+% Your Answer Here
+
+% End of your Answer
+\newpage
+
+%.........  Q7  ..... %	
+
+\question (8 points): List the driver id and surname of any driver who achieved all positions from 1 to 10 (got the first position in at least one race, got 2nd position in at least one race, ...).  
+
+\textbf{Answer:} \\
+% Your Answer Here
+
+% End of your Answer
+\newpage
+
+%.........  Q8  ..... %	
+
+\question (7 points): List the ids and surnames of drivers who have driven for both the 'BMW Sauber' and 'Toyota' constructors at some point in their careers.
+
+\textbf{Answer:} \\
+% Your Answer Here
+
+% End of your Answer
+\newpage
+
+%.........  Q9  ..... %	
+
+\question (8 points): List the ids and surnames of drivers who have experience driving for both 'BMW Sauber' and 'Toyota' constructors but have not driven for any other constructors.
+
+\textbf{Answer:} \\
+% Your Answer Here
+
+% End of your Answer
+\newpage
+
+%.........  Q10  ..... %	
+\question (8 points): Suppose relations R(A B) and S(A C) have n tuples and m tuples, respectively, where n $>$ 0 and m $>$ 0.  R.A is a key and S.A is a foreign key to R.A. Find the minimum and maximum numbers of tuples that the following expressions can have:
+
+\begin{enumerate}
+  \item $\pi_{A}R \cap \pi_{A}S$ 
+  \item $\pi_{A}R \cup \pi_{A}S$ 
+  \item $\pi_{A}R - \pi_{A}S$ 
+  \item $\pi_{A}S - \pi_{A}R$ 
+\end{enumerate}
+
+\textbf{Answers:} 
+% Place your answers after \item
+\begin{enumerate}
+    \item 
+    \item 
+    \item 
+    \item 
+\end{enumerate}
+
+
+\end{questions}
+\bigskip 
+\noindent
+
+
+\end{document}
